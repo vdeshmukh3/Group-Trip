@@ -1,4 +1,4 @@
-# Render Blueprint: one Web Service (API + built React UI)
+# Render Blueprint: one Web Service (API + built React UI) and a free Postgres database
 # https://render.com/docs/blueprint-spec
 
 services:
@@ -11,9 +11,13 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "20"
-      - key: DATA_DIR
-        value: /var/data
-    disk:
-      name: group-trip-data
-      mountPath: /var/data
-      sizeGB: 1
+      - key: DATABASE_URL
+        fromDatabase:
+          name: group-trip-db
+          property: connectionString
+
+databases:
+  - name: group-trip-db
+    plan: free
+    databaseName: group_trip
+    user: group_trip

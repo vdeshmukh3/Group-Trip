@@ -8,6 +8,11 @@ Create a group trip, add people, log expenses (who paid, who the expense is spli
 npm install
 cd server && npm install && cd ..
 cd client && npm install && cd ..
+```
+
+Set `DATABASE_URL` to a PostgreSQL connection string, then start the app:
+
+```bash
 npm run dev
 ```
 
@@ -18,11 +23,15 @@ Share the trip page URL or trip code so others can open the same trip and add ex
 
 ## Data storage
 
-Trip data is stored in `server/data/trips.xlsx` (or under `DATA_DIR` when configured).
-The workbook has separate `Trips`, `Members`, `Expenses`, and `ExpenseSplits` sheets.
-When the app starts without a workbook, it imports any existing `trips.db` once and
-creates the workbook. The original database file is left in place as a backup; all
-new changes are written to Excel.
+Trip data is stored in PostgreSQL through `DATABASE_URL`. On startup, the app creates
+the required tables. If the database has no trips and `server/data/trips.xlsx` exists,
+the app imports the workbook's Trips, Members, Expenses, and ExpenseSplits sheets.
+The workbook is left unchanged as a backup.
+
+To import the local workbook into a newly created Render database, set the Render
+database's **External Database URL** as `DATABASE_URL` in your local environment and
+run `npm run migrate --prefix server` before adding trips in the deployed app. The
+external URL is a secret; do not commit it to the repository.
 
 ## Group password
 
@@ -57,10 +66,10 @@ One **Web Service** serves both the React app and the API (same as local product
 
 1. Push this repo to **GitHub** (or GitLab).
 2. In [Render](https://render.com) → **New** → **Blueprint**.
-3. Connect the repo; Render reads `render.yaml` (includes a **1 GB disk** at `/var/data` for the workbook).
+3. Connect the repo; Render reads `render.yaml` and creates a free web service plus a free Postgres database.
 4. Deploy. Your app URL will look like `https://group-trip-xxxx.onrender.com`.
 
-The blueprint sets `DATA_DIR=/var/data` via the mounted disk so `trips.xlsx` survives redeploys.
+The Blueprint connects the service to Postgres through `DATABASE_URL`.
 
 ### Option B — Manual Web Service
 
@@ -72,10 +81,9 @@ The blueprint sets `DATA_DIR=/var/data` via the mounted disk so `trips.xlsx` sur
 | **Start command** | `npm start` |
 | **Node version** | 20 (Environment → `NODE_VERSION=20`) |
 
-**Persistent data (important):** Without a disk, `trips.xlsx` is wiped on every deploy/restart.
+For a manual setup, create a Render Postgres database and add its **Internal Database URL** to the web service as `DATABASE_URL`.
 
-1. **Disks** → Add disk, mount path `/var/data`, size 1 GB.
-2. **Environment** → add `DATA_DIR` = `/var/data`.
+**Free Postgres limits:** Render's free database has 1 GB storage, no backups, and expires 30 days after creation. Upgrade it before expiration if you need to keep the data longer.
 
 ### After deploy
 
@@ -86,4 +94,4 @@ The blueprint sets `DATA_DIR=/var/data` via the mounted disk so `trips.xlsx` sur
 
 - **Build fails on `tsc`:** ensure build uses `npm run install:all` so devDependencies install.
 - **Blank page / 404:** confirm the build step completed and `client/dist` exists in the image.
-- **Data lost:** attach a disk and set `DATA_DIR=/var/data`.
+- **Database connection fails:** confirm `DATABASE_URL` is set to the Postgres database's Internal Database URL.
