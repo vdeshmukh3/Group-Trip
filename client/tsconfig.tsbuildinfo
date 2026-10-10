@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/api.ts","./src/main.tsx","./src/vite-env.d.ts","./src/components/addexpenseform.tsx","./src/components/addmemberform.tsx","./src/components/expenseform.tsx","./src/components/expenselist.tsx","./src/components/summarypanel.tsx","./src/pages/homepage.tsx","./src/pages/trippage.tsx"],"version":"5.9.3"}

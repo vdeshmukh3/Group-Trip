@@ -1,0 +1,19 @@
+# Render Blueprint: one Web Service (API + built React UI)
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: group-trip
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run install:all && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: group-trip-data
+      mountPath: /var/data
+      sizeGB: 1
