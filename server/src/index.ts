@@ -27,6 +27,10 @@ const asyncRoute = (handler: RequestHandler): RequestHandler =>
     Promise.resolve(handler(req, res, next)).catch(next);
   };
 
+function routeParam(value: string | string[]) {
+  return Array.isArray(value) ? value[0] ?? "" : value;
+}
+
 async function getTripPayload(tripId: string) {
   const tripResult = await query<Trip>("SELECT * FROM trips WHERE id = $1", [
     tripId,
@@ -108,7 +112,7 @@ app.post(
 app.get(
   "/api/trips/:id",
   asyncRoute(async (req, res) => {
-    const payload = await getTripPayload(req.params.id);
+    const payload = await getTripPayload(routeParam(req.params.id));
     if (!payload) {
       res.status(404).json({ error: "Trip not found" });
       return;
@@ -120,7 +124,7 @@ app.get(
 app.post(
   "/api/trips/:id/members",
   asyncRoute(async (req, res) => {
-    const tripId = req.params.id;
+    const tripId = routeParam(req.params.id);
     const trip = await query("SELECT id FROM trips WHERE id = $1", [tripId]);
     if (trip.rowCount === 0) {
       res.status(404).json({ error: "Trip not found" });
@@ -148,7 +152,7 @@ app.post(
 app.post(
   "/api/trips/:id/expenses",
   asyncRoute(async (req, res) => {
-    const tripId = req.params.id;
+    const tripId = routeParam(req.params.id);
     const trip = await query("SELECT id FROM trips WHERE id = $1", [tripId]);
     if (trip.rowCount === 0) {
       res.status(404).json({ error: "Trip not found" });
@@ -259,7 +263,7 @@ async function validateExpenseForTrip(
 app.patch(
   "/api/expenses/:id",
   asyncRoute(async (req, res) => {
-    const expenseId = req.params.id;
+    const expenseId = routeParam(req.params.id);
     const existingResult = await query<Expense>(
       "SELECT * FROM expenses WHERE id = $1",
       [expenseId]
@@ -315,7 +319,7 @@ app.delete(
   "/api/expenses/:id",
   asyncRoute(async (req, res) => {
     const result = await query("DELETE FROM expenses WHERE id = $1", [
-      req.params.id,
+      routeParam(req.params.id),
     ]);
     if (result.rowCount === 0) {
       res.status(404).json({ error: "Expense not found" });
